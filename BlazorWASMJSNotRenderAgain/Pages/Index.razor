@@ -1,14 +1,24 @@
 ﻿@page "/"
 @inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
 <canvas id="canvas" width="500" height="500"></canvas>
 
 @code {
+    IJSObjectReference? rivWrapper;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/Index.razor.js");
+            rivWrapper = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/Index.razor.js");
+            await rivWrapper.InvokeVoidAsync("createRive");
         }
     }
+
+    public async ValueTask DisposeAsync()
+    {
+        await rivWrapper!.DisposeAsync();
+    }
+
 }

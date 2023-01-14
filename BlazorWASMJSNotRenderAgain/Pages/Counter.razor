@@ -1,18 +1,24 @@
 ﻿@page "/counter"
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
-<PageTitle>Counter</PageTitle>
-
-<h1>Counter</h1>
-
-<p role="status">Current count: @currentCount</p>
-
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<canvas id="canvas" width="500" height="500"></canvas>
 
 @code {
-    private int currentCount = 0;
+    IJSObjectReference? rivWrapper;
 
-    private void IncrementCount()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        currentCount++;
+        if (firstRender)
+        {
+            rivWrapper = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/Counter.razor.js");
+            await rivWrapper.InvokeVoidAsync("createRive");
+        }
     }
+
+    public async ValueTask DisposeAsync()
+    {
+        await rivWrapper!.DisposeAsync();
+    }
+
 }

@@ -1,22 +1,26 @@
 ﻿@page "/counter"
 @inject IJSRuntime JSRuntime
-@*@implements IAsyncDisposable*@
+@implements IAsyncDisposable
 
 <div class="container">
     <canvas id="canvas" width="500" height="500"></canvas>
     <div class="content">
-        <button type="button" @onclick="SuccessEmotion">Clickme</button>
-        <button type="button" @onclick="HandsUp">Clickme</button>
-        <button type="button" @onclick="IsChecking">Clickme</button>
+        <button type="button" @onclick="SuccessEmotion">Clickme Success</button>
+        <button type="button" @onclick="FailEmotion">Clickme Fail</button>
         <input type="number" @bind="@NumLookValue" @bind:event="oninput" />
-        <button @onclick="UpdateNumLookValue">Update NumLook Value</button>
         @NumLookValue
+        <input type="checkbox" @bind="isChecking" @onclick="IsChecking" /> Checking
+        @isChecking
+        <input type="checkbox" @bind="isHandsUp" @onclick="HandsUp" /> Hands up
+        @isHandsUp
     </div>
 </div>
 
 
 @code {
     IJSObjectReference? rivWrapper;
+    public bool isHandsUp { get; set; }
+    public bool isChecking { get; set; }
     private int numLookValue;
     public int NumLookValue
     {
@@ -28,7 +32,6 @@
         {
             numLookValue = value;
             UpdateNumLookValue();
-            //StateHasChanged();
         }
     }
 
@@ -46,26 +49,30 @@
         await rivWrapper.InvokeVoidAsync("doSuccessEmotionJs");
     }
 
+    public async Task FailEmotion()
+    {
+        await rivWrapper.InvokeVoidAsync("doFailEmotionJs");
+    }
+
     public async Task HandsUp()
     {
-        await rivWrapper.InvokeVoidAsync("doHandsUp");
+        await rivWrapper.InvokeVoidAsync("doHandsUpJs", isHandsUp);
     }
 
     public async Task IsChecking()
     {
-        await rivWrapper.InvokeVoidAsync("doChecking");
+        await rivWrapper.InvokeVoidAsync("doCheckingJs", isChecking);
     }
 
     private async Task UpdateNumLookValue()
     {
-        await rivWrapper.InvokeVoidAsync("doNumLook", NumLookValue);
+        await rivWrapper.InvokeVoidAsync("doNumLookJs", NumLookValue);
     }
 
     public async ValueTask DisposeAsync()
     {
         if (rivWrapper != null)
         {
-            //await rivWrapper.InvokeVoidAsync("disposeRive");
             await rivWrapper.DisposeAsync();
         }
     }

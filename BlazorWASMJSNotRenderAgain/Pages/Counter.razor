@@ -1,40 +1,72 @@
 ﻿@page "/counter"
 @inject IJSRuntime JSRuntime
-@implements IAsyncDisposable
+@*@implements IAsyncDisposable*@
 
 <div class="container">
     <canvas id="canvas" width="500" height="500"></canvas>
     <div class="content">
-        @*   <a href="#">Upload Now</a>*@
         <button type="button" @onclick="SuccessEmotion">Clickme</button>
+        <button type="button" @onclick="HandsUp">Clickme</button>
+        <button type="button" @onclick="IsChecking">Clickme</button>
+        <input type="number" @bind="@NumLookValue" @bind:event="oninput" />
+        <button @onclick="UpdateNumLookValue">Update NumLook Value</button>
+        @NumLookValue
     </div>
-    <p></p>
-
 </div>
 
 
 @code {
     IJSObjectReference? rivWrapper;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private int numLookValue;
+    public int NumLookValue
     {
-        if (firstRender)
+        get
         {
-            rivWrapper = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/Counter.razor.js");
-            await rivWrapper.InvokeVoidAsync("createRive");
-            //importedDHTML = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/Index.razor.js");
+            return numLookValue;
+        }
+        set
+        {
+            numLookValue = value;
+            UpdateNumLookValue();
+            //StateHasChanged();
         }
     }
 
-    public void SuccessEmotion()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        rivWrapper.InvokeAsync<IJSObjectReference>("doSuccessEmotionJs");
-        StateHasChanged();
+        if (firstRender && rivWrapper is null)
+        {
+            rivWrapper = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/Counter.razor.js");
+            await rivWrapper.InvokeVoidAsync("createRive");
+        }
+    }
+
+    public async Task SuccessEmotion()
+    {
+        await rivWrapper.InvokeVoidAsync("doSuccessEmotionJs");
+    }
+
+    public async Task HandsUp()
+    {
+        await rivWrapper.InvokeVoidAsync("doHandsUp");
+    }
+
+    public async Task IsChecking()
+    {
+        await rivWrapper.InvokeVoidAsync("doChecking");
+    }
+
+    private async Task UpdateNumLookValue()
+    {
+        await rivWrapper.InvokeVoidAsync("doNumLook", NumLookValue);
     }
 
     public async ValueTask DisposeAsync()
     {
-        await rivWrapper!.DisposeAsync();
+        if (rivWrapper != null)
+        {
+            //await rivWrapper.InvokeVoidAsync("disposeRive");
+            await rivWrapper.DisposeAsync();
+        }
     }
-
 }

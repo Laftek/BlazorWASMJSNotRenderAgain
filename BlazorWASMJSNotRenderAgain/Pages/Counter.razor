@@ -2,7 +2,16 @@
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
-<canvas id="canvas" width="500" height="500"></canvas>
+<div class="container">
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <div class="content">
+        @*   <a href="#">Upload Now</a>*@
+        <button type="button" @onclick="SuccessEmotion">Clickme</button>
+    </div>
+    <p></p>
+
+</div>
+
 
 @code {
     IJSObjectReference? rivWrapper;
@@ -13,7 +22,14 @@
         {
             rivWrapper = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/Counter.razor.js");
             await rivWrapper.InvokeVoidAsync("createRive");
+            //importedDHTML = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/Index.razor.js");
         }
+    }
+
+    public void SuccessEmotion()
+    {
+        rivWrapper.InvokeAsync<IJSObjectReference>("doSuccessEmotionJs");
+        StateHasChanged();
     }
 
     public async ValueTask DisposeAsync()

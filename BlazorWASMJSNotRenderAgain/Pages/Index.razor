@@ -4,16 +4,34 @@
 
 <canvas id="canvas" width="500" height="500"></canvas>
 
+<br />
+@onAfterRender Render
+<br />
+@onInitialized Initialization
+
 @code {
     IJSObjectReference? rivWrapper;
+    public int onAfterRender { get; set; }
+    public int onInitialized { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            rivWrapper = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/Index.razor.js");
-            await rivWrapper.InvokeVoidAsync("createRive");
+            
+            onAfterRender++;
+            StateHasChanged();
         }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        rivWrapper = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/Index.razor.js");
+        await rivWrapper.InvokeVoidAsync("createRive");
+        onInitialized++;
+        StateHasChanged();
+        await Task.CompletedTask;
+        //return base.OnInitializedAsync();
     }
 
     public async ValueTask DisposeAsync()

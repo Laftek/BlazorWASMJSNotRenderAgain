@@ -14,6 +14,12 @@
 
 @code {
     IJSObjectReference? rivWrapper;
+
+    public string RiveSrc { get; set; } = "starRating.riv";
+    public string RiveCanvas { get; set; } = "canvas";
+    public bool RiveAutoPlay { get; set; } = true;
+    public string RiveStateMachine { get; set; } = "State Machine 1";
+
     public bool isHandsUp { get; set; }
     public bool isChecking { get; set; }
     public bool isFromRive { get; set; } = false;
@@ -39,7 +45,7 @@
         if (firstRender && rivWrapper is null)
         {
             rivWrapper = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/FetchData.razor.js");
-            await rivWrapper.InvokeVoidAsync("createRive");
+            await rivWrapper.InvokeVoidAsync("createRive", RiveSrc, RiveCanvas, RiveAutoPlay, RiveStateMachine);
         }
     }
 

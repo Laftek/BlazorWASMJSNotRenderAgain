@@ -4,10 +4,10 @@
 
 <div class="container">
     <canvas id="canvas" width="500" height="500" @onclick="StarsRatingFromRive"></canvas>
-    <div class="content" >
-        <input type="number" @bind="@StarsRatingValue" @bind:event="oninput" />
+    <div class="content">
+        <input type="number" @bind:event="oninput" @bind="StarsRatingValue" />
+
         @StarsRatingValue
-        @StartFromJs
     </div>
 </div>
 
@@ -16,7 +16,7 @@
     IJSObjectReference? rivWrapper;
     public bool isHandsUp { get; set; }
     public bool isChecking { get; set; }
-    public int StartFromJs { get; set; }
+    public bool isFromRive { get; set; } = false;
     private int starsRatingValue;
     public int StarsRatingValue
     {
@@ -27,7 +27,10 @@
         set
         {
             starsRatingValue = value;
-            StarsRatingFromNET();
+            if (!isFromRive)
+            {
+                StarsRatingFromNET();
+            }
         }
     }
 
@@ -49,14 +52,11 @@
 
     private async Task StarsRatingFromRive()
     {
-        StartFromJs = await rivWrapper.InvokeAsync<int>("doStarsRatingFromRive");
+        isFromRive = true;
+        StarsRatingValue = await rivWrapper.InvokeAsync<int>("doStarsRatingFromRive");
+        isFromRive = false;
         StateHasChanged();
     }
-
-    //private void Test()
-    //{
-    //    StartFromJs = 5;
-    //}
 
     public async ValueTask DisposeAsync()
     {

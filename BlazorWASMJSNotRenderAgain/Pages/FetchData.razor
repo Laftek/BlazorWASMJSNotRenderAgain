@@ -1,57 +1,68 @@
 ﻿@page "/fetchdata"
-@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
 
-<PageTitle>Weather forecast</PageTitle>
+<div class="container">
+    <canvas id="canvas" width="500" height="500" @onclick="StarsRatingFromRive"></canvas>
+    <div class="content" >
+        <input type="number" @bind="@StarsRatingValue" @bind:event="oninput" />
+        @StarsRatingValue
+        @StartFromJs
+    </div>
+</div>
 
-<h1>Weather forecast</h1>
-
-<p>This component demonstrates fetching data from the server.</p>
-
-@if (forecasts == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
 
 @code {
-    private WeatherForecast[]? forecasts;
-
-    protected override async Task OnInitializedAsync()
+    IJSObjectReference? rivWrapper;
+    public bool isHandsUp { get; set; }
+    public bool isChecking { get; set; }
+    public int StartFromJs { get; set; }
+    private int starsRatingValue;
+    public int StarsRatingValue
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+        get
+        {
+            return starsRatingValue;
+        }
+        set
+        {
+            starsRatingValue = value;
+            StarsRatingFromNET();
+        }
     }
 
-    public class WeatherForecast
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        public DateOnly Date { get; set; }
+        if (firstRender && rivWrapper is null)
+        {
+            rivWrapper = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./Pages/FetchData.razor.js");
+            await rivWrapper.InvokeVoidAsync("createRive");
+        }
+    }
 
-        public int TemperatureC { get; set; }
 
-        public string? Summary { get; set; }
+    private async Task StarsRatingFromNET()
+    {
+        await rivWrapper.InvokeAsync<int>("doStarsRatingFromNET", StarsRatingValue);
+        StateHasChanged();
+    }
 
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    private async Task StarsRatingFromRive()
+    {
+        StartFromJs = await rivWrapper.InvokeAsync<int>("doStarsRatingFromRive");
+        StateHasChanged();
+    }
+
+    //private void Test()
+    //{
+    //    StartFromJs = 5;
+    //}
+
+    public async ValueTask DisposeAsync()
+    {
+        if (rivWrapper != null)
+        {
+            await rivWrapper.DisposeAsync();
+        }
     }
 }

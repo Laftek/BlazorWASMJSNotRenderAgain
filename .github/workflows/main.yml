@@ -21,7 +21,7 @@ jobs:
             7.0.x
       # Publish the site
       - name: Publish
-        run: dotnet publish BlazorWASMJSNotRenderAgain..csproj -c:Release -o:public -p:GHPages=true --nologo
+        run: dotnet publish BlazorWASMJSNotRenderAgain.csproj -c:Release -o:public -p:GHPages=true --nologo
 
       # Deploy the site
       - name: Deploy
